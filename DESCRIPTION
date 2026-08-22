@@ -1,0 +1,14 @@
+Package: jotteR
+Version: 0.0.0.9000
+Type: Package
+Title: Project Notebooks
+Authors@R: person(
+    given = "Tina",
+    family = "NeutroTina",
+    email = "neutrotina@proton.me",
+    role = c("aut", "cre"))
+Description: Personal notebooks with general notes accessed through the console.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.1.0

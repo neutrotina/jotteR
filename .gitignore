@@ -1,0 +1,6 @@
+notebook/.notebook_state.rds
+notebook/notes.txt
+*.Rhistory
+.RData
+.Ruserdata
+*.tar.gz
