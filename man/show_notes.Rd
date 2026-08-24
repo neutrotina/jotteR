@@ -2,7 +2,7 @@
 % Please edit documentation in R/notebook-display.R
 \name{show_notes}
 \alias{show_notes}
-\title{Show open notebook notes}
+\title{Show open general notes}
 \usage{
 show_notes(note_dir = notebook_dir())
 }
@@ -10,10 +10,10 @@ show_notes(note_dir = notebook_dir())
 \item{note_dir}{Directory containing the notebook files.}
 }
 \value{
-The open notes, invisibly.
+The general notes, invisibly.
 }
 \description{
-Prints all currently open notebook notes.
+Prints all currently open general notes.
 }
 \examples{
 \dontrun{

@@ -1,16 +1,16 @@
-
 .empty_notebook_state <- function() {
   list(
+    schema_version = 2L,
     notes = list(),
-    done = list(),
-    general = list()
+    tasks = list(),
+    done = list()
   )
 }
 
 
 .load_notebook_state <- function(
-note_dir = notebook_dir()
-) {
+    note_dir = notebook_dir()
+  ) {
   paths <- .notebook_paths(note_dir)
 
   if (!file.exists(paths$state)) {
@@ -23,13 +23,13 @@ note_dir = notebook_dir()
 
   required <- c(
     "notes",
-    "done",
-    "general"
+    "tasks",
+    "done"
   )
 
   if (
     !is.list(state) ||
-      !all(required %in% names(state))
+    !all(required %in% names(state))
   ) {
     stop(
       "The notebook state file has an invalid format.",
@@ -37,8 +37,13 @@ note_dir = notebook_dir()
     )
   }
 
+  if (is.null(state$schema_version)) {
+    state$schema_version <- 2L
+  }
+
   state
 }
+
 
 
 .save_notebook_state <- function(
@@ -58,12 +63,10 @@ note_dir = notebook_dir()
     file = temporary_file
   )
 
-  if (
-    !file.rename(
-      from = temporary_file,
-      to = paths$state
-    )
-  ) {
+  if (!file.rename(
+    from = temporary_file,
+    to = paths$state
+  )) {
     unlink(temporary_file)
 
     stop(
@@ -162,8 +165,8 @@ note_dir = notebook_dir()
 
     if (
       is.na(index) ||
-        index < 1L ||
-        index > length(entries)
+      index < 1L ||
+      index > length(entries)
     ) {
       stop(
         "Invalid note index.",
@@ -192,7 +195,7 @@ note_dir = notebook_dir()
 
     titles <- vapply(
       entries,
-function(entry) {
+      function(entry) {
         if (is.null(entry$title)) {
           ""
         } else {
@@ -213,13 +216,14 @@ function(entry) {
   }
 
   stop(
-    "No note was found with that index or ID.",
+    "No entry was found with that index or ID.",
     call. = FALSE
   )
 }
 
+
 `%||%` <- function(x, y) {
-  if (is.null(x)) {
+if (is.null(x)) {
     y
   } else {
     x
@@ -230,19 +234,26 @@ function(entry) {
 .write_notebook_text <- function(
     state,
     note_dir = notebook_dir(),
-
     filename = "notes.txt"
   ) {
   paths <- .notebook_paths(note_dir)
-  output_file <- file.path(paths$directory, filename)
+
+  output_file <- file.path(
+    paths$directory,
+    filename
+  )
 
   output <- c(
     sprintf(
       "Notebook export: %s",
-      format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+      format(
+        Sys.time(),
+        "%Y-%m-%d %H:%M:%S"
+      )
     ),
     "",
-    "NOT DONE:"
+    "GENERAL NOTES:",
+    "=============="
   )
 
   if (length(state$notes) == 0L) {
@@ -252,6 +263,46 @@ function(entry) {
     )
   } else {
     for (entry in state$notes) {
+      title <- if (
+        is.null(entry$title)
+      ) {
+        ""
+      } else {
+        entry$title
+      }
+
+      output <- c(
+        output,
+        sprintf(
+          "  [%s] %s | %s",
+          entry$id,
+          entry$date,
+          title
+        ),
+        strsplit(
+          entry$text,
+          "\n",
+          fixed = TRUE
+        )[[1L]],
+        ""
+      )
+    }
+  }
+
+  output <- c(
+    output,
+    "",
+    "OPEN TASKS:",
+    "==========="
+  )
+
+  if (length(state$tasks) == 0L) {
+    output <- c(
+      output,
+      "  (none)"
+    )
+  } else {
+    for (entry in state$tasks) {
       title <- if (
         is.null(entry$title)
       ) {
@@ -282,7 +333,9 @@ function(entry) {
 
   output <- c(
     output,
-    "DONE:"
+    "",
+    "COMPLETED TASKS:",
+    "================="
   )
 
   if (length(state$done) == 0L) {
@@ -298,44 +351,6 @@ function(entry) {
           "  [%s] %s",
           entry$id,
           entry$title %||% ""
-        ),
-        strsplit(
-          entry$text,
-          "\n",
-          fixed = TRUE
-        )[[1L]],
-        ""
-      )
-    }
-  }
-
-  output <- c(
-    output,
-    "GENERAL NOTES:"
-  )
-
-  if (length(state$general) == 0L) {
-    output <- c(
-      output,
-      "  (none)"
-    )
-  } else {
-    for (entry in state$general) {
-      title <- if (
-        is.null(entry$title)
-      ) {
-        ""
-      } else {
-        entry$title
-      }
-
-      output <- c(
-        output,
-        sprintf(
-          "  [%s] %s | %s",
-          entry$id,
-          entry$date,
-          title
         ),
         strsplit(
           entry$text,

@@ -12,6 +12,7 @@ new_test_notebook_dir <- function() {
   path
 }
 
+
 test_that(
   "a new notebook starts empty",
   {
@@ -32,12 +33,12 @@ test_that(
     )
 
     expect_length(
-      state$done,
+      state$tasks,
       0L
     )
 
     expect_length(
-      state$general,
+      state$done,
       0L
     )
   }
@@ -50,15 +51,15 @@ test_that(
     note_dir <- new_test_notebook_dir()
 
     id <- add_note(
-      note = "Check the macrophage markers.",
-      id = "marker_check",
-      title = "Macrophage markers",
+      note = "The final QC retained 24,201 cells.",
+      id = "result_1",
+      title = "Final QC",
       note_dir = note_dir
     )
 
     expect_identical(
       id,
-      "marker_check"
+      "result_1"
     )
 
     expect_true(
@@ -88,14 +89,19 @@ test_that(
       1L
     )
 
+    expect_length(
+      state$tasks,
+      0L
+    )
+
     expect_identical(
       state$notes[[1L]]$id,
-      "marker_check"
+      "result_1"
     )
 
     expect_identical(
       state$notes[[1L]]$text,
-      "Check the macrophage markers."
+      "The final QC retained 24,201 cells."
     )
   }
 )
@@ -136,11 +142,11 @@ test_that(
 
 
 test_that(
-  "general notes can be printed by ID",
+  "notes can be printed by ID",
   {
     note_dir <- new_test_notebook_dir()
 
-    add_general_note(
+    add_note(
       note = c(
         "The final QC retained 24,201 cells.",
         "High-count cells were retained."
@@ -151,12 +157,11 @@ test_that(
     )
 
     printed <- utils::capture.output(
-  print_note(
-    "result_1",
-    note_dir = note_dir
-  )
-)
-
+      print_note(
+        "result_1",
+        note_dir = note_dir
+      )
+    )
 
     expect_true(
       any(
@@ -201,17 +206,61 @@ test_that(
 
 
 test_that(
-  "notes can be marked as done and reloaded",
+  "adding a task saves it separately from notes",
   {
     note_dir <- new_test_notebook_dir()
 
-    add_note(
-      note = "Complete this task.",
-      id = "task_1",
+    id <- add_task(
+      task = "Complete the neutrophil QC audit.",
+      id = "neutrophil_qc",
+      title = "Neutrophil QC",
       note_dir = note_dir
     )
 
-    completed_id <- mark_note_done(
+    expect_identical(
+      id,
+      "neutrophil_qc"
+    )
+
+    state <- reload_notes(
+      note_dir = note_dir
+    )
+
+    expect_length(
+      state$notes,
+      0L
+    )
+
+    expect_length(
+      state$tasks,
+      1L
+    )
+
+    expect_identical(
+      state$tasks[[1L]]$id,
+      "neutrophil_qc"
+    )
+
+    expect_identical(
+      state$tasks[[1L]]$text,
+      "Complete the neutrophil QC audit."
+    )
+  }
+)
+
+
+test_that(
+  "tasks can be marked as done and reloaded",
+  {
+    note_dir <- new_test_notebook_dir()
+
+    add_task(
+      task = "Complete this task.",
+      id = "task_1",
+note_dir = note_dir
+    )
+
+    completed_id <- mark_task_done(
       index_or_id = "task_1",
       note_dir = note_dir
     )
@@ -227,6 +276,11 @@ test_that(
 
     expect_length(
       state$notes,
+      0L
+    )
+
+    expect_length(
+      state$tasks,
       0L
     )
 
@@ -277,8 +331,40 @@ test_that(
 
 
 test_that(
+  "tasks can be removed by ID",
+  {
+    note_dir <- new_test_notebook_dir()
 
-"duplicate note IDs are rejected",
+    add_task(
+      task = "Temporary task.",
+      id = "temporary_task",
+      note_dir = note_dir
+    )
+
+    removed_id <- remove_task(
+      index_or_id = "temporary_task",
+      note_dir = note_dir
+    )
+
+    expect_identical(
+      removed_id,
+      "temporary_task"
+    )
+
+    state <- reload_notes(
+      note_dir = note_dir
+    )
+
+    expect_length(
+      state$tasks,
+      0L
+    )
+  }
+)
+
+
+test_that(
+  "duplicate entry IDs are rejected",
   {
     note_dir <- new_test_notebook_dir()
 
@@ -292,6 +378,29 @@ test_that(
       add_note(
         note = "Second note.",
         id = "duplicate",
+        note_dir = note_dir
+      ),
+      "already exists"
+    )
+  }
+)
+
+
+test_that(
+  "duplicate IDs are rejected across notes and tasks",
+  {
+    note_dir <- new_test_notebook_dir()
+
+    add_note(
+      note = "A general note.",
+      id = "shared_id",
+      note_dir = note_dir
+    )
+
+    expect_error(
+      add_task(
+        task = "A task with the same ID.",
+        id = "shared_id",
         note_dir = note_dir
       ),
       "already exists"

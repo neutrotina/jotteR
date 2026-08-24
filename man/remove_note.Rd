@@ -2,7 +2,7 @@
 % Please edit documentation in R/notebook-display.R
 \name{remove_note}
 \alias{remove_note}
-\title{Remove an open notebook note}
+\title{Remove an open general note}
 \usage{
 remove_note(index_or_id, note_dir = notebook_dir())
 }
@@ -15,10 +15,11 @@ remove_note(index_or_id, note_dir = notebook_dir())
 The removed note ID, invisibly.
 }
 \description{
-Permanently removes an open note and saves the notebook state immediately.
+Permanently removes an open general note and saves the notebook state
+immediately.
 }
 \examples{
 \dontrun{
-remove_note("high_count_check")
+remove_note("result_1")
 }
 }

@@ -1,10 +1,10 @@
-#' Show open notebook notes
+#' Show open general notes
 #'
-#' Prints all currently open notebook notes.
+#' Prints all currently open general notes.
 #'
 #' @param note_dir Directory containing the notebook files.
 #'
-#' @return The open notes, invisibly.
+#' @return The general notes, invisibly.
 #' @export
 #'
 #' @examples
@@ -17,7 +17,8 @@ show_notes <- function(
   state <- .load_notebook_state(note_dir)
 
   if (length(state$notes) == 0L) {
-    cat("No open notes.\n")
+    cat("No notes.\n")
+
     return(
       invisible(state$notes)
     )
@@ -25,6 +26,69 @@ show_notes <- function(
 
   for (i in seq_along(state$notes)) {
     entry <- state$notes[[i]]
+
+    title <- if (
+      is.null(entry$title)
+    ) {
+      ""
+    } else {
+      paste0(
+        " | ",
+        entry$title
+      )
+    }
+
+    date <- entry$date %||% ""
+
+    cat(
+      sprintf(
+        "[%d] %s | %s%s\n",
+        i,
+        entry$id,
+        date,
+        title
+      )
+    )
+
+    cat(
+      entry$text,
+      "\n\n",
+      sep = ""
+    )
+  }
+
+  invisible(state$notes)
+}
+
+
+#' Show open notebook tasks
+#'
+#' Prints all currently open notebook tasks.
+#'
+#' @param note_dir Directory containing the notebook files.
+#'
+#' @return The open tasks, invisibly.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' show_tasks()
+#' }
+show_tasks <- function(
+    note_dir = notebook_dir()
+  ) {
+  state <- .load_notebook_state(note_dir)
+
+  if (length(state$tasks) == 0L) {
+    cat("No open tasks.\n")
+
+    return(
+      invisible(state$tasks)
+    )
+  }
+
+  for (i in seq_along(state$tasks)) {
+    entry <- state$tasks[[i]]
 
     title <- if (
       is.null(entry$title)
@@ -53,29 +117,31 @@ show_notes <- function(
     )
   }
 
-  invisible(state$notes)
+  invisible(state$tasks)
 }
 
-#' Show completed notebook notes
+
+#' Show completed notebook tasks
 #'
-#' Prints all notes that have been marked as completed.
+#' Prints all tasks that have been marked as completed.
 #'
 #' @param note_dir Directory containing the notebook files.
 #'
-#' @return The completed notes, invisibly.
+#' @return The completed tasks, invisibly.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' show_done_notes()
+#' show_done_tasks()
 #' }
-show_done_notes <- function(
+show_done_tasks <- function(
     note_dir = notebook_dir()
   ) {
   state <- .load_notebook_state(note_dir)
 
   if (length(state$done) == 0L) {
-    cat("No done notes.\n")
+    cat("No completed tasks.\n")
+
     return(
       invisible(state$done)
     )
@@ -86,9 +152,19 @@ show_done_notes <- function(
 
     cat(
       sprintf(
-        "[%d] %s\n%s\n\n",
+        "[%d] %s%s\n%s\n\n",
         i,
         entry$id,
+        if (
+          is.null(entry$title)
+        ) {
+          ""
+        } else {
+          paste0(
+            " | ",
+            entry$title
+          )
+        },
         entry$text
       )
     )
@@ -97,88 +173,38 @@ show_done_notes <- function(
   invisible(state$done)
 }
 
-#' Show general notebook notes
-#'
-#' Prints all general notebook notes.
-#'
-#' @param note_dir Directory containing the notebook files.
-#'
-#' @return The general notes, invisibly.
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' show_general_notes()
-#' }
-show_general_notes <- function(
-    note_dir = notebook_dir()
-  ) {
-  state <- .load_notebook_state(note_dir)
 
-  if (length(state$general) == 0L) {
-    cat("No general notes.\n")
-    return(
-      invisible(state$general)
-    )
-  }
-
-  for (i in seq_along(state$general)) {
-    entry <- state$general[[i]]
-
-    title <- if (
-      is.null(entry$title)
-    ) {
-      ""
-    } else {
-      paste0(
-        " | ",
-        entry$title
-      )
-    }
-
-    cat(
-      sprintf(
-        "[%d] %s%s\n%s\n\n",
-        i,
-        entry$date,
-        title,
-        entry$text
-      )
-    )
-  }
-
-  invisible(state$general)
-}
-#' Mark a notebook note as completed
+#' Mark a notebook task as completed
 #'
-#' Moves an open note to the completed-note collection and saves the
+#' Moves an open task to the completed-task collection and saves the
 #' notebook state immediately.
 #'
-#' @param index_or_id Numeric index or character ID of an open note.
+#' @param index_or_id Numeric index or character ID of an open task.
 #' @param note_dir Directory containing the notebook files.
 #'
-#' @return The completed note ID, invisibly.
+#' @return The completed task ID, invisibly.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' mark_note_done("high_count_check")
+#' mark_task_done("high_count_check")
 #' }
-mark_note_done <- function(
+mark_task_done <- function(
     index_or_id,
     note_dir = notebook_dir()
   ) {
   state <- .load_notebook_state(note_dir)
 
   index <- .resolve_entry(
-    state$notes,
+    state$tasks,
     index_or_id
   )
 
-  entry <- state$notes[[index]]
+  entry <- state$tasks[[index]]
   entry$completed <- Sys.time()
 
-  state$notes <- state$notes[-index]
+  state$tasks <- state$tasks[-index]
+
   state$done <- c(
     state$done,
     list(entry)
@@ -190,16 +216,18 @@ mark_note_done <- function(
   )
 
   .write_notebook_text(
-state,
+    state,
     note_dir
   )
 
   invisible(entry$id)
 }
 
-#' Remove an open notebook note
+
+#' Remove an open general note
 #'
-#' Permanently removes an open note and saves the notebook state immediately.
+#' Permanently removes an open general note and saves the notebook state
+#' immediately.
 #'
 #' @param index_or_id Numeric index or character ID of an open note.
 #' @param note_dir Directory containing the notebook files.
@@ -209,7 +237,7 @@ state,
 #'
 #' @examples
 #' \dontrun{
-#' remove_note("high_count_check")
+#' remove_note("result_1")
 #' }
 remove_note <- function(
     index_or_id,
@@ -238,11 +266,56 @@ remove_note <- function(
 
   invisible(removed_id)
 }
+
+
+#' Remove an open notebook task
+#'
+#' Permanently removes an open task and saves the notebook state immediately.
+#'
+#' @param index_or_id Numeric index or character ID of an open task.
+#' @param note_dir Directory containing the notebook files.
+#'
+#' @return The removed task ID, invisibly.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' remove_task("high_count_check")
+#' }
+remove_task <- function(
+    index_or_id,
+    note_dir = notebook_dir()
+  ) {
+  state <- .load_notebook_state(note_dir)
+
+  index <- .resolve_entry(
+    state$tasks,
+    index_or_id
+  )
+
+  removed_id <- state$tasks[[index]]$id
+
+  state$tasks <- state$tasks[-index]
+
+  .save_notebook_state(
+    state,
+    note_dir
+  )
+
+  .write_notebook_text(
+    state,
+    note_dir
+  )
+
+  invisible(removed_id)
+}
+
+
 #' Save the notebook state and text export
 #'
 #' Explicitly saves the durable notebook state and rewrites the
-#' human-readable text export. Notes are also saved automatically after
-#' each mutation.
+#' human-readable text export. Notes and tasks are also saved automatically
+#' after each mutation.
 #'
 #' @param note_dir Directory containing the notebook files.
 #' @param filename Name of the human-readable text export.
@@ -315,10 +388,10 @@ reload_notes <- function(
 
   cat(
     sprintf(
-      "Reloaded %d open note(s), %d done note(s), and %d general note(s).\n",
+      "Reloaded %d note(s), %d open task(s), and %d completed task(s).\n",
       length(state$notes),
-      length(state$done),
-      length(state$general)
+      length(state$tasks),
+      length(state$done)
     )
   )
 

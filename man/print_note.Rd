@@ -2,8 +2,10 @@
 % Please edit documentation in R/notebook-notes.R
 \name{print_note}
 \alias{print_note}
-\title{Print a notebook note}
+\title{Print a notebook note or task}
 \usage{
+print_note(note = NULL, note_dir = notebook_dir())
+
 print_note(note = NULL, note_dir = notebook_dir())
 }
 \arguments{
@@ -14,14 +16,30 @@ object containing text to print.}
 }
 \value{
 The printed text, invisibly.
+
+The printed text, invisibly.
 }
 \description{
+Prints a general note, open task or completed task. A numeric input
+selects an open general note by its current index. A character input
+matching an ID or title retrieves the saved entry. Other character input
+is printed directly.
+
 Prints an open, completed, or general notebook note. A numeric input
 selects an open note by its current index. A character input matching a
 note ID or title retrieves the saved note. Other character input is
 printed directly.
 }
 \examples{
+\dontrun{
+print_note("result_1")
+
+result_1 <- c(
+  "The final QC retained 24,201 cells.",
+  "High-count myeloid cells were retained."
+)
+print_note(result_1)
+}
 \dontrun{
 print_note("result_1")
 

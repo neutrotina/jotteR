@@ -2,16 +2,24 @@
 % Please edit documentation in R/notebook-notes.R
 \name{add_note}
 \alias{add_note}
-\title{Add an open notebook note}
+\title{Add a general notebook note}
 \usage{
-add_note(note, id = NULL, title = NULL, note_dir = notebook_dir())
+add_note(
+  note,
+  title = NULL,
+  id = NULL,
+  date = Sys.Date(),
+  note_dir = notebook_dir()
+)
 }
 \arguments{
 \item{note}{Character vector containing the note text.}
 
-\item{id}{Optional stable identifier. If omitted, an identifier is generated.}
-
 \item{title}{Optional short title.}
+
+\item{id}{Optional stable identifier.}
+
+\item{date}{Date associated with the note.}
 
 \item{note_dir}{Directory containing the notebook files.}
 }
@@ -19,15 +27,14 @@ add_note(note, id = NULL, title = NULL, note_dir = notebook_dir())
 The note ID, invisibly.
 }
 \description{
-Adds a note to the project notebook and saves the notebook state
-immediately. Notes may contain multiple lines.
+Adds a dated general note and saves the notebook state immediately.
 }
 \examples{
 \dontrun{
 add_note(
-  note = "Check the high-count macrophage cells.",
-  id = "high_count_check",
-  title = "High-count cells"
+  note = "The final QC retained 24,201 cells.",
+  title = "Final QC",
+  id = "result_1"
 )
 }
 }

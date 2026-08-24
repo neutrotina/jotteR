@@ -16,8 +16,8 @@ The path to the text export, invisibly.
 }
 \description{
 Explicitly saves the durable notebook state and rewrites the
-human-readable text export. Notes are also saved automatically after
-each mutation.
+human-readable text export. Notes and tasks are also saved automatically
+after each mutation.
 }
 \examples{
 \dontrun{

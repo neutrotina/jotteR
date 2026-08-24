@@ -21,9 +21,9 @@ notebook_dir <- function(
   ) {
   if (
     length(project_dir) != 1L ||
-      !is.character(project_dir) ||
-      is.na(project_dir) ||
-      !nzchar(project_dir)
+    !is.character(project_dir) ||
+    is.na(project_dir) ||
+    !nzchar(project_dir)
   ) {
     stop(
       "`project_dir` must be one non-empty character string.",
@@ -33,9 +33,9 @@ notebook_dir <- function(
 
   if (
     length(folder) != 1L ||
-      !is.character(folder) ||
-      is.na(folder) ||
-      !nzchar(folder)
+    !is.character(folder) ||
+    is.na(folder) ||
+    !nzchar(folder)
   ) {
     stop(
       "`folder` must be one non-empty character string.",
@@ -51,8 +51,8 @@ notebook_dir <- function(
 
 
 .notebook_paths <- function(
-note_dir = notebook_dir()
-) {
+    note_dir = notebook_dir()
+  ) {
   dir.create(
     path = note_dir,
     recursive = TRUE,
